@@ -3,6 +3,7 @@ pipeline {
 
     environment { 
         PROJECTNAME = 'my_web_blog'
+        DOCKERNAME = 'soloma70'
     }
 
     triggers { pollSCM('2 * * * *') }
@@ -45,21 +46,26 @@ pipeline {
 
         stage('Build Docker image') {
             steps{
-                sh 'docker build -t $USERNAME/$PROJECTNAME:v1.${BUILD_NUMBER} .'
-                sh 'docker images'
+                sh '''
+                docker build -t $DOCKERNAME/$PROJECTNAME:v1.${BUILD_NUMBER} .
+                docker tag $DOCKERNAME/$PROJECTNAME:v1.${BUILD_NUMBER} $DOCKERNAME/$PROJECTNAME:latest
+                docker images
+                '''
             }
         }
         
         stage('Push Docker image to DockerHub') {
             steps{
-                sh 'docker login -u $USERNAME --password $PASSWORD'
-                sh 'docker push $USERNAME/$PROJECTNAME:v1.${BUILD_NUMBER}'
+                sh '''
+                docker push $DOCKERNAME/$PROJECTNAME:v1.${BUILD_NUMBER}
+                docker push $DOCKERNAME/$PROJECTNAME:latest
+                '''
             }
         }
         
         stage('Delete Docker image locally') {
             steps{
-                sh 'docker rmi $(docker images -a -q)'
+                sh 'docker rmi -f $(docker images -q $DOCKERNAME/$PROJECTNAME)'
                 sh 'docker images'
             }
         }
