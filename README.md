@@ -3,7 +3,7 @@
 ### Step L1  EPAM DevOps Fundamentals Spring 2022
   
 #### Webpage: 
-<blog-soloma70.pp.ua>
+(http://blog-soloma70.pp.ua)
   
 ---  
 **Software Tools:**
