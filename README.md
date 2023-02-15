@@ -2,8 +2,7 @@
 ## Mykhailo Solomashenko
 ### Step L1  EPAM DevOps Fundamentals Spring 2022
   
-#### Webpage: 
-<blog-soloma70.pp.ua>
+#### Webpage: http://blog-soloma70.pp.ua
   
 ---  
 **Software Tools:**
