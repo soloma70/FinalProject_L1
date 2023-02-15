@@ -7,6 +7,13 @@ pipeline {
         PASSWORD = 'dckr_pat_OLD6WTF5AsLEuI3GiMDYFqCxrFA'
     }
 
+    triggers { pollSCM('2 * * * *') }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '10'))
+        timestamps()
+    }
+
     stages {
 
         stage('Delete workspace before build starts') {
