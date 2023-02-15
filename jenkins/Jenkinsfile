@@ -1,0 +1,54 @@
+pipeline {
+    agent { label 'ubuntu-docker' }
+
+    environment { 
+        PROJECTNAME = 'my_web_blog'
+        USERNAME = 'soloma70'
+        PASSWORD = 'dckr_pat_OLD6WTF5AsLEuI3GiMDYFqCxrFA'
+    }
+
+    stages {
+
+        stage('Delete workspace before build starts') {
+            steps {
+                echo 'Deleting workspace'
+                deleteDir()
+            }
+        }
+        
+        stage('Checkout') {
+            steps{
+                git branch: 'master',
+                    url: 'https://github.com/soloma70/my_site.git/'        
+                }
+        }
+        
+        stage('Test') {
+            steps{
+                sh 'ls -la'
+                sh 'pwd'
+            }
+        }
+        
+        stage('Build docker image') {
+            steps{
+                sh 'docker build -t $USERNAME/$PROJECTNAME:v1.${BUILD_NUMBER} .'
+                sh 'docker images'
+            }
+        }
+        
+        stage('Push docker image to DockerHub') {
+            steps{
+                sh 'docker login -u $USERNAME --password $PASSWORD'
+                sh 'docker push $USERNAME/$PROJECTNAME:v1.${BUILD_NUMBER}'
+            }
+        }
+        
+        stage('Delete docker image locally') {
+            steps{
+                sh 'docker rmi $(docker images -a -q)'
+                sh 'docker images'
+            }
+        }
+    }
+}
