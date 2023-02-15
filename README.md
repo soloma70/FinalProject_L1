@@ -2,10 +2,11 @@
 ## Mykhailo Solomashenko
 ### Step L1  EPAM DevOps Fundamentals Spring 2022
   
-### Webpage: <blog-soloma70.pp.ua>
+#### Webpage: 
+<blog-soloma70.pp.ua>
   
+---  
 **Software Tools:**
----
 1. Club's Blog Wep App on Django Python
 2. Building a pipeline - Jenkins
 3. Containerization - Docker
