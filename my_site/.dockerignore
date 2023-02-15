@@ -6,3 +6,4 @@ Dockerfile
 db/
 media/
 .git/
+jenkins/
