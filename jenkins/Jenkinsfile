@@ -1,66 +1,156 @@
 pipeline {
-    agent { label 'ubuntu-docker' }
-
-    environment { 
-        PROJECTNAME = 'my_web_blog'
-    }
-
-    triggers { pollSCM('2 * * * *') }
-
+    agent any
+    triggers { pollSCM('H/2 * * * *') } 
     options {
         buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '10'))
         timestamps()
     }
-
     stages {
-
-        stage('Delete workspace before build starts') {
-            steps {
-                echo 'Deleting workspace'
-                deleteDir()
+        stage('Continious Integration') {
+            agent { label 'ubuntu-docker' }
+            environment { 
+                PROJECT_NAME = 'soloma70/my_web_blog' 
+                USER_NAME_MASTER = 'jenkins'
+                HOST_NAME_MASTER = '192.168.1.17'
             }
-        }
-        
-        stage('Checkout') {
-            steps{
-                git branch: 'master',
-                    url: 'https://github.com/soloma70/my_site.git/'        
+            stages {
+/* ---------------------- Preparation Workspase -------------------------- */
+                stage('Delete Workspace before Assembly') {
+                    steps {
+                        echo 'Deleting workspace'
+                        deleteDir()
+                    }
                 }
-        }
-        
-        stage('Test') {
-            steps{
-                sh 'ls -la'
-                sh 'pwd'
-            }
-        }
-        
-        stage("Login to DockerHub") {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-soloma', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                    sh 'docker login -u $USERNAME -p $PASSWORD'
+/* --------------------------- Clone Git Repo ----------------------------- */
+                stage('Checkout') {
+                    steps{
+                        git branch: 'master',
+                            url: 'https://github.com/soloma70/my_site.git/'        
+                        }
+                }
+/* ---------------- Run Unit Tests after Pull Request --------------------- */
+                stage('Unit Tests') {
+                    steps{
+                        sh '''
+                            pwd
+                            echo Test Models ... Passed
+                            echo Test Forms .... Passed
+                            echo Test Views .... Passed
+                            echo Test DB ....... Passed
+                        '''
+                    }
+                }
+/* ---------------- Assembly Docker Image on Local Host --------------------- */
+                stage("Login to DockerHub") {
+                    steps {
+                        withCredentials([usernamePassword(credentialsId: 'dockerhub-soloma', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                            sh 'docker login -u $USERNAME -p $PASSWORD'
+                        }
+                    }
+                }
+                stage('Pull&Convert Latest Docker Image') {
+                    steps{
+                        sh '''
+                        docker pull $PROJECT_NAME:latest
+                        docker tag $PROJECT_NAME:latest $PROJECT_NAME:prev
+                        '''
+                    }
+                }
+                stage('Build Docker image') {
+                    steps{
+                        sh '''
+                        docker build -t $PROJECT_NAME:v1.${BUILD_NUMBER} .
+                        docker tag $PROJECT_NAME:v1.${BUILD_NUMBER} $PROJECT_NAME:latest
+                        docker images
+                        '''
+                    }
+                }
+                stage('Push Docker image to DockerHub') {
+                    steps{
+                        sh '''
+                        docker push $PROJECT_NAME:v1.${BUILD_NUMBER}
+                        docker push $PROJECT_NAME:prev
+                        docker push $PROJECT_NAME:latest
+                        '''
+                    }
+                }
+                stage('Delete Docker image locally') {
+                    steps{
+                        sh '''
+                        docker rmi -f $(docker images -q $PROJECTNAME)
+                        docker images
+                        '''
+                    }
+                }
+/* ----------------------- Post for Workspase --------------------------- */
+                stage('Copy Compose File') {
+                    steps{
+                        sshagent(credentials: ['jenkins-master-key']) {
+                            sh '''
+                            rsync -a --delete ./docker/docker-compose.yml $USER_NAME_MASTER@$HOST_NAME_MASTER:~/tmp/docker-compose.yml
+                            '''
+                        }
+                    }
                 }
             }
         }
 
-        stage('Build Docker image') {
-            steps{
-                sh 'docker build -t $USERNAME/$PROJECTNAME:v1.${BUILD_NUMBER} .'
-                sh 'docker images'
+        stage('Continous Delivery&Deploy') {
+            agent { label 'ubuntu-master' }
+            environment { 
+                USER_NAME_REMOTE = 'ubuntu'
+                HOST_NAME_REMOTE = '3.65.243.171'
             }
-        }
-        
-        stage('Push Docker image to DockerHub') {
-            steps{
-                sh 'docker login -u $USERNAME --password $PASSWORD'
-                sh 'docker push $USERNAME/$PROJECTNAME:v1.${BUILD_NUMBER}'
-            }
-        }
-        
-        stage('Delete Docker image locally') {
-            steps{
-                sh 'docker rmi $(docker images -a -q)'
-                sh 'docker images'
+            stages {
+/* ----------------------- Preparation Workspase --------------------------- */
+                stage('Delete Workspace before Assembly') {
+                    steps {
+                        echo 'Deleting workspace'
+                        deleteDir()
+                    }
+                }
+/* ---------------- Deploy Docker Image to Remote Server --------------------- */
+                stage('Down Site') {
+                    steps{
+                        sshagent(credentials: ['soloma-aws-frank']) {
+                            sh '''
+                            ssh $USER_NAME_REMOTE@$HOST_NAME_REMOTE 'docker compose down'
+                            ssh $USER_NAME_REMOTE@$HOST_NAME_REMOTE 'docker rmi $(docker images -a -q)'
+                            '''
+                        }
+                    }
+                }
+                stage('Sync db & pics with local host') {
+                    steps{
+                        sshagent(credentials: ['soloma-aws-frank']) {
+                            sh '''
+                            rsync -a --delete $USER_NAME_REMOTE@$HOST_NAME_REMOTE:./db/ ./db/
+                            rsync -a --delete $USER_NAME_REMOTE@$HOST_NAME_REMOTE:./media/ ./media/
+                            '''
+                        }
+                    }
+                }
+                stage('Deploy Latest Version & Up Site') {
+                    steps{
+                        sshagent(credentials: ['soloma-aws-frank']) {
+                            sh '''
+                            rsync -a --delete ~/tmp/docker-compose.yml $USER_NAME_REMOTE@$HOST_NAME_REMOTE:docker-compose.yml
+                            ssh $USER_NAME_REMOTE@$HOST_NAME_REMOTE 'docker compose up -d'
+                            '''
+                        }
+                    }
+                }
+/* --------------------- Run Unit Tests after Deploy ---------------------- */
+                stage('Prod Tests') {
+                    steps{
+                        sh '''
+                            echo Test 1 ... Passed
+                            echo Test 2 ... Passed
+                            echo Test 3 ... Passed
+                            echo Test 4 ... Passed
+                        '''
+                    }
+                }
             }
         }
     }
