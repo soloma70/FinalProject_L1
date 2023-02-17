@@ -11,8 +11,8 @@
 3. Containerization - Docker
 4. Raising the infrastructure on AWS - Terraform
 5. Management the infrastructure on AWS - Ansible
-
-![](/.screenshots/Jenkins_01.jpg)
-![](/.screenshots/GitHub_01.jpg)
-![](/.screenshots/DockerHub_01.jpg)
-![](/.screenshots/my_web_blog_01.jpg)
+---
+![](./screenshots/Jenkins_01.jpg)
+![](./screenshots/GitHub_01.jpg)
+![](./screenshots/DockerHub_01.jpg)
+![](./screenshots/my_web_blog_01.jpg)
