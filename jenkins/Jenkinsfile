@@ -15,7 +15,7 @@ pipeline {
             }
             stages {
 /* ---------------------- Preparation Workspase -------------------------- */
-                stage('Delete Workspace before Assembly') {
+                stage('Preparation Workspase Slave') {
                     steps {
                         echo 'Deleting workspace'
                         deleteDir()
@@ -41,14 +41,14 @@ pipeline {
                     }
                 }
 /* ---------------- Assembly Docker Image on Local Host --------------------- */
-                stage("Login to DockerHub") {
+                stage("DockerHub Login") {
                     steps {
                         withCredentials([usernamePassword(credentialsId: 'dockerhub-soloma', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                             sh 'docker login -u $USERNAME -p $PASSWORD'
                         }
                     }
                 }
-                stage('Pull&Convert Latest Docker Image') {
+                stage('Pull & Convert') {
                     steps{
                         sh '''
                         docker pull $PROJECT_NAME:latest
@@ -56,7 +56,7 @@ pipeline {
                         '''
                     }
                 }
-                stage('Build Docker image') {
+                stage('Build Docker Images') {
                     steps{
                         sh '''
                         docker build -t $PROJECT_NAME:v1.${BUILD_NUMBER} .
@@ -65,7 +65,7 @@ pipeline {
                         '''
                     }
                 }
-                stage('Push Docker image to DockerHub') {
+                stage('Push Docker Images') {
                     steps{
                         sh '''
                         docker push $PROJECT_NAME:v1.${BUILD_NUMBER}
@@ -74,7 +74,7 @@ pipeline {
                         '''
                     }
                 }
-                stage('Delete Docker image locally') {
+                stage('Delete Docker Images on Slave') {
                     steps{
                         sh '''
                         docker rmi -f $(docker images -q $PROJECTNAME)
@@ -83,18 +83,18 @@ pipeline {
                     }
                 }
 /* ----------------------- Post for Workspase --------------------------- */
-                stage('Copy Compose File') {
+                stage('Copy Compose File on Master') {
                     steps{
                         sshagent(credentials: ['jenkins-master-key']) {
                             sh '''
                             rsync -a --delete ./docker/docker-compose.yml $USER_NAME_MASTER@$HOST_NAME_MASTER:~/tmp/docker-compose.yml
+                            rsync -a --delete ./docker/docker-compose-prev.yml $USER_NAME_MASTER@$HOST_NAME_MASTER:~/tmp/docker-compose-prev.yml
                             '''
                         }
                     }
                 }
             }
         }
-
         stage('Continous Delivery&Deploy') {
             agent { label 'ubuntu-master' }
             environment { 
@@ -103,24 +103,39 @@ pipeline {
             }
             stages {
 /* ----------------------- Preparation Workspase --------------------------- */
-                stage('Delete Workspace before Assembly') {
+                stage('Preparation Workspase Master') {
                     steps {
                         echo 'Deleting workspace'
                         deleteDir()
                     }
                 }
 /* ---------------- Deploy Docker Image to Remote Server --------------------- */
-                stage('Down Site') {
+                stage('Down Web Site') {
                     steps{
                         sshagent(credentials: ['soloma-aws-frank']) {
-                            sh '''
-                            ssh $USER_NAME_REMOTE@$HOST_NAME_REMOTE 'docker compose down'
-                            ssh $USER_NAME_REMOTE@$HOST_NAME_REMOTE 'docker rmi $(docker images -a -q)'
-                            '''
+                            script {
+                                sh '''
+                                IMAGE_ID=$(ssh ubuntu@3.65.243.171 'docker images -aq')
+                                CONTAINER_ID=$(ssh ubuntu@3.65.243.171 'docker ps -aqf name=ubuntu-web-1')
+                                
+                                if [ $CONTAINER_ID != "" ] 
+                                then
+                                    ssh $USER_NAME_REMOTE@$HOST_NAME_REMOTE 'docker compose down'
+                                else
+                                    echo 'No running containers'
+                                fi
+                                if [ $IMAGE_ID != "" ]
+                                then
+                                    ssh $USER_NAME_REMOTE@$HOST_NAME_REMOTE 'docker rmi $(docker images -aq)'
+                                else
+                                    echo 'No available images'
+                                fi                            
+                                '''
+                            }
                         }
                     }
                 }
-                stage('Sync db & pics with local host') {
+                stage('Sync DATA with Local Host') {
                     steps{
                         sshagent(credentials: ['soloma-aws-frank']) {
                             sh '''
@@ -130,7 +145,7 @@ pipeline {
                         }
                     }
                 }
-                stage('Deploy Latest Version & Up Site') {
+                stage('Deploy Latest & Up Web Site') {
                     steps{
                         sshagent(credentials: ['soloma-aws-frank']) {
                             sh '''
@@ -140,15 +155,28 @@ pipeline {
                         }
                     }
                 }
-/* --------------------- Run Unit Tests after Deploy ---------------------- */
-                stage('Prod Tests') {
+/* ------------------------- Run Tests after Deploy ---------------------------- */
+                stage('Tests after Deploy') {
                     steps{
-                        sh '''
-                            echo Test 1 ... Passed
-                            echo Test 2 ... Passed
-                            echo Test 3 ... Passed
-                            echo Test 4 ... Passed
-                        '''
+                        sshagent(credentials: ['soloma-aws-frank']) {
+                            script {
+                                sh '''
+                                RESP_SITE=$(curl -I http://blog-soloma70.pp.ua 2>/dev/null | head -n 1)
+                                RESP_WWW=$(curl -I http://www.blog-soloma70.pp.ua 2>/dev/null | head -n 1)
+
+                                if [ $RESP_SITE != "HTTP/1.1 200 OK" ] OR [ $RESP_WWW != "HTTP/1.1 200 OK" ] 
+                                then
+                                    echo 'Requires a rollback to a previous version!!!'
+                                    ssh $USER_NAME_REMOTE@$HOST_NAME_REMOTE 'docker compose down'
+                                    ssh $USER_NAME_REMOTE@$HOST_NAME_REMOTE 'docker rmi $(docker images -aq)'
+                                    rsync -a --delete ~/tmp/docker-compose-prev.yml $USER_NAME_REMOTE@$HOST_NAME_REMOTE:docker-compose.yml
+                                    ssh $USER_NAME_REMOTE@$HOST_NAME_REMOTE 'docker compose up -d'
+                                else
+                                    echo 'THE NEW VERSION OF THE SITE IS INSTALLED AND READY TO GO!!!'
+                                fi
+                                '''
+                            }
+                        }
                     }
                 }
             }
