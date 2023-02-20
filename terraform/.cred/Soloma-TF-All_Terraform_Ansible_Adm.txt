@@ -1,7 +1,0 @@
-Soloma-TF-All
-
-Access key: AKIARGPOXHA63BAN4LEA
-Secret key: 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
-
-export AWS_ACCESS_KEY_ID='AKIARGPOXHA63BAN4LEA'
-export AWS_SECRET_ACCESS_KEY='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'
