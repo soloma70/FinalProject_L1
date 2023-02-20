@@ -1,0 +1,66 @@
+---
+- name: Install Apache and Upload my Web Page
+  hosts: all
+  become: true
+  become_method: su
+  become_user: root
+
+
+  
+  vars:
+    source_dir: ./MyWebSite2
+    destin_dir: /var/www/html
+  
+  tasks:
+
+    - name: Check and Print Linux Family
+      debug: var=ansible_os_family
+
+
+    - block: #---------- For RedHat ----------------
+    
+        - name: Install Apache Web Server for RedHat
+          yum:  name=httpd state=latest
+
+        - name: Start and Enable Server for RedHat
+          service: name=httpd.service state=started enabled=yes
+        
+      when: ansible_os_family == "RedHat"        
+        
+    
+    - block: #---------- For Debian ----------------
+    
+        - name: Install Apache Web Server for Debian
+          apt:  name=apache2 state=latest
+  
+        - name: Start and Enable Server for Debian
+          service: name=apache2 state=started enabled=yes
+      
+      when: ansible_os_family == "Debian"
+    
+
+    - name: Generate INDEX.HTML and copy to Server
+      template: src={{ source_dir }}/index.j2 dest={{ destin_dir }}/index.html mode=0555
+      notify: 
+        - Restart Apache RedHat
+        - Restart Apache Debian
+
+
+    - name: Copy other files to Servers
+      copy: src={{ source_dir }}/{{ item }} dest={{ destin_dir }} mode=0555
+      loop:
+        - Kemer_01.jpg
+        - DeVos_Tramp.png
+      notify: 
+        - Restart Apache RedHat
+        - Restart Apache Debian
+
+
+  handlers:
+    - name: Restart Apache RedHat
+      service: name=httpd.service state=restarted
+      when: ansible_os_family == "RedHat"
+    
+    - name: Restart Apache Debian
+      service: name=apache2 state=restarted
+      when: ansible_os_family == "Debian"
