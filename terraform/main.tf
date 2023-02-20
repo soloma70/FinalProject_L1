@@ -2,6 +2,14 @@ provider "aws" {
   region = var.region
 }
 
+terraform {
+  backend "s3" {
+    bucket = "soloma-webapp-tfstate"
+    key    = "terraform/prod/terraform.tfstate"
+    region = "eu-central-1"
+  }
+}
+
 resource "aws_default_vpc" "default" {}
 
 data "aws_ami" "latest_ubuntu" {
@@ -13,15 +21,41 @@ data "aws_ami" "latest_ubuntu" {
   }
 }
 
+data "aws_arn" "s3_webapp_blog" {
+  arn = "arn:aws:s3:::soloma-webapp-tfstate"
+}
+
+data "aws_route53_zone" "webapp_blog" {
+  name = "blog-soloma70.pp.ua."
+}
+
 resource "aws_key_pair" "webapp_blog" {
   key_name   = "WebApp-Blog-Key"
-  public_key = var.public_key
+  public_key = file("./.cred/webapp_blog.pub")
 }
 
 resource "aws_eip" "webapp_blog" {
   vpc      = true
   instance = aws_instance.webapp_blog.id
   tags = merge(var.common_tags, { Name = "IP-WebApp-Server-${var.common_tags["Env"]}" })
+}
+
+resource "aws_route53_record" "www_webapp_blog" {
+  zone_id = data.aws_route53_zone.webapp_blog.zone_id
+  name    = "www.${data.aws_route53_zone.webapp_blog.name}"
+  type    = "A"
+  ttl     = "300"
+  records = [aws_eip.webapp_blog.public_ip]
+  depends_on = [aws_eip.webapp_blog]
+}
+
+resource "aws_route53_record" "webapp_blog" {
+  zone_id = data.aws_route53_zone.webapp_blog.zone_id
+  name    = data.aws_route53_zone.webapp_blog.name
+  type    = "A"
+  ttl     = "300"
+  records = [aws_eip.webapp_blog.public_ip]
+  depends_on = [aws_eip.webapp_blog]
 }
 
 resource "aws_instance" "webapp_blog" {
@@ -34,6 +68,8 @@ resource "aws_instance" "webapp_blog" {
 
   tags = merge(var.common_tags, { Name = "WebApp-Server-${var.common_tags["Env"]}" })
 }
+
+
 
 resource "aws_security_group" "webapp_blog" {
   name   = "SG WebApp Blog"

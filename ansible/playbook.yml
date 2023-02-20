@@ -1,66 +1,62 @@
 ---
-- name: Install Apache and Upload my Web Page
-  hosts: all
+- name: Install Docker on Remote Hosts
+  hosts: tag_Project_Web_Blog
   become: true
-  become_method: su
-  become_user: root
-
-
   
   vars:
-    source_dir: ./MyWebSite2
-    destin_dir: /var/www/html
+    default_release_ubuntu: jammy
+    default_user: ubuntu
   
   tasks:
-
-    - name: Check and Print Linux Family
-      debug: var=ansible_os_family
-
-
-    - block: #---------- For RedHat ----------------
-    
-        - name: Install Apache Web Server for RedHat
-          yum:  name=httpd state=latest
-
-        - name: Start and Enable Server for RedHat
-          service: name=httpd.service state=started enabled=yes
-        
-      when: ansible_os_family == "RedHat"        
-        
-    
-    - block: #---------- For Debian ----------------
-    
-        - name: Install Apache Web Server for Debian
-          apt:  name=apache2 state=latest
+  - name: Install Aptitude Using Apt
+    apt: name=aptitude state=latest update_cache=yes force_apt_get=yes
   
-        - name: Start and Enable Server for Debian
-          service: name=apache2 state=started enabled=yes
+  - name: Install Required System Packages
+    apt: name={{ item }} state=latest update_cache=yes
+    loop: [ 
+      'apt-transport-https', 
+      'ca-certificates', 
+      'curl', 
+      'software-properties-common', 
+      'python3-pip', 
+      'virtualenv', 
+      'python3-setuptools'
+      ] 
+  
+  - name: Add Docker GPG apt Key
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+  
+  - name: Add Docker Repository
+    apt_repository:
+      repo: deb https://download.docker.com/linux/ubuntu {{ default_release_ubuntu }} stable
+      state: present
+  
+  - name: Update Apt and Install docker-ce
+    apt: update_cache=yes name=docker-ce state=latest
+  
+  - name: Install Docker Module for Python
+    pip:
+      name: docker
+
+  - name: Add User to Docker Group
+    shell: usermod -aG docker {{ default_user }}
+
+  - name: Restart Docker Service
+    service: name=docker state=restarted
+
+  - name: Check Docker Install
+    shell: docker --version
+    register: res_docker
+  
+  - name: Check Compose Install
+    shell: docker compose version
+    register: res_compose
+
+  - debug:
+      var: res_docker.stdout
+
+  - debug:
+      var: res_compose.stdout
       
-      when: ansible_os_family == "Debian"
-    
-
-    - name: Generate INDEX.HTML and copy to Server
-      template: src={{ source_dir }}/index.j2 dest={{ destin_dir }}/index.html mode=0555
-      notify: 
-        - Restart Apache RedHat
-        - Restart Apache Debian
-
-
-    - name: Copy other files to Servers
-      copy: src={{ source_dir }}/{{ item }} dest={{ destin_dir }} mode=0555
-      loop:
-        - Kemer_01.jpg
-        - DeVos_Tramp.png
-      notify: 
-        - Restart Apache RedHat
-        - Restart Apache Debian
-
-
-  handlers:
-    - name: Restart Apache RedHat
-      service: name=httpd.service state=restarted
-      when: ansible_os_family == "RedHat"
-    
-    - name: Restart Apache Debian
-      service: name=apache2 state=restarted
-      when: ansible_os_family == "Debian"
