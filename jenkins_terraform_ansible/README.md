@@ -1,6 +1,6 @@
 ## Initial Deployment Infrastructure on the base Terraform + Ansible + Jenkins (pipeline)  
 1. The job is done on the slave node, on which should be installed: `Ansible`, `Terraform` and `AWS CLI`.  
-2. `Jenkins` must be installed on the master node with the necessary plugins: `Ansible plugin`, `Terraform Plugin`
+2. `Jenkins` must be installed on the master node with the necessary `Ansible plugin`.
 3. In the directory, you need to place the `.cred` folder with the public key (based on it, access to the EC2 Instance is created) and file `aws` (full access to AWS resources) in format (replace X with your data):  
 ```
 [default]
