@@ -1,10 +1,9 @@
 ---
 - name: Install Docker on Remote Hosts
-  hosts: tag_Project_Web_Blog
+  hosts: all
   become: true
   
   vars:
-    default_release_ubuntu: jammy
     default_user: ubuntu
   
   tasks:
@@ -23,6 +22,10 @@
       'python3-setuptools'
       ] 
   
+  - name: Get Ubuntu release
+    shell: lsb_release -cs
+    register: release_ubuntu
+
   - name: Add Docker GPG apt Key
     apt_key:
       url: https://download.docker.com/linux/ubuntu/gpg
@@ -30,7 +33,7 @@
   
   - name: Add Docker Repository
     apt_repository:
-      repo: deb https://download.docker.com/linux/ubuntu {{ default_release_ubuntu }} stable
+      repo: deb https://download.docker.com/linux/ubuntu {{ release_ubuntu.stdout }} stable
       state: present
   
   - name: Update Apt and Install docker-ce

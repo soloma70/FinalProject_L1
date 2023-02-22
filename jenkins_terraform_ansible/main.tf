@@ -31,7 +31,7 @@ data "aws_route53_zone" "webapp_blog" {
 
 resource "aws_key_pair" "webapp_blog" {
   key_name   = "WebApp-Blog-Key"
-  public_key = file("./.cred/webapp_blog.pub")
+  public_key = file("./.cred/app_aws.pub")
 }
 
 resource "aws_eip" "webapp_blog" {
