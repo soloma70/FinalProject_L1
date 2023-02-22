@@ -17,6 +17,11 @@
 2. `my_site` - Code for website "Python Bytes Club Blog", Docker & Docker Compose files, Jenkins file. 
 3. `screenshots` - Available screenshots.
 ---
+1. IaaC Pipeline:
+![](./screenshots/Jenkins_02.jpg)
+![](./screenshots/GitHub_02.jpg)
+
+2. CI/CD Pipeline:
 ![](./screenshots/Jenkins_01.jpg)
 ![](./screenshots/GitHub_01.jpg)
 ![](./screenshots/DockerHub_01.jpg)
