@@ -18,13 +18,16 @@
 3. `screenshots` - Available screenshots.
 ---
 1. IaaC Pipeline:
+![](./screenshots/Jenkins_01.jpg)
+![](./screenshots/GitHub_01.jpg)
+
+2. Initial setup:
 ![](./screenshots/Jenkins_02.jpg)
 ![](./screenshots/GitHub_02.jpg)
 
-2. CI/CD Pipeline:
-![](./screenshots/Jenkins_01.jpg)
-![](./screenshots/GitHub_01.jpg)
+3. CI/CD Pipeline:
+![](./screenshots/Jenkins_03.jpg)
 ![](./screenshots/DockerHub_01.jpg)
 
-3. Web Site:
+4. Web Site:
 ![](./screenshots/my_web_blog_01.jpg)
