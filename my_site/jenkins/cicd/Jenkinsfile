@@ -1,6 +1,5 @@
 pipeline {
     agent any
-    triggers { pollSCM('H/2 * * * *') } 
     options {
         buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '10'))
         timestamps()
@@ -11,7 +10,7 @@ pipeline {
             agent { label 'ubuntu-docker' }
             environment { 
                 PROJECT_NAME = 'soloma70/my_web_blog' 
-                AWS_SHARED_CREDENTIALS_FILE='/home/jenkins/.aws/aws'
+                AWS_SHARED_CREDENTIALS_FILE='/home/ubuntu/.aws/aws'
             }
             stages {
 /* -------------------- Clean Workspase Before Job ------------------------------ */
@@ -25,7 +24,7 @@ pipeline {
                 stage('Clone Repo') {
                     steps{
                         git branch: 'master',
-                            url: 'https://github.com/soloma70/my_site.git/'        
+                            url: 'https://github.com/soloma70/my_site.git'        
                         }
                 }
 /* ---------------- Run Unit Tests after Pull Request --------------------------- */
@@ -81,6 +80,13 @@ pipeline {
                         sh '''
                         aws s3 sync docker s3://soloma-webapp-blog/docker --delete
                         '''
+                    }
+                }
+/* -------------------- Clean Workspase After Job ------------------------------ */
+                stage('Clean After Slave') {
+                    steps {
+                        echo 'Deleting workspace'
+                        deleteDir()
                     }
                 }
             }

@@ -1,6 +1,5 @@
 pipeline {
     agent any
-
     options {
         buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '10'))
         timestamps()
@@ -11,7 +10,7 @@ pipeline {
             agent { label 'ubuntu-docker' }
             environment { 
                 PROJECT_NAME = 'soloma70/my_web_blog' 
-                AWS_SHARED_CREDENTIALS_FILE='/home/jenkins/.aws/aws'
+                AWS_SHARED_CREDENTIALS_FILE='/home/ubuntu/.aws/aws'
             }
             stages {
 /* -------------------- Clean Workspase Before Job ------------------------------ */
@@ -25,7 +24,7 @@ pipeline {
                 stage('Clone Repo') {
                     steps{
                         git branch: 'master',
-                            url: 'https://github.com/soloma70/my_site.git/'        
+                            url: 'https://github.com/soloma70/my_site.git'        
                         }
                 }
 /* ---------------- Run Unit Tests after Pull Request --------------------- */
@@ -150,7 +149,7 @@ pipeline {
 /* ------------------------- Run Tests after Deploy ---------------------------- */
                 stage('Job Tests') {
                     steps{
-                        sshagent(credentials: ['aws_deploy_cicd']) {
+                        sshagent(credentials: ['aws_deploy_iaac']) {
                             script {
                                 sh '''
                                 RESP_SITE=$(curl -I http://blog-soloma70.pp.ua 2>/dev/null | head -n 1)
