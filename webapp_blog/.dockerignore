@@ -1,0 +1,10 @@
+datadump.json
+*.md
+.dockerignore
+Dockerfile
+*.yml
+db/
+media/
+.git/
+jenkins/
+docker/

@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+    web:
+        image: soloma70/my_web_blog:latest
+        restart: always
+        command: python manage.py runserver 0.0.0.0:8000
+        volumes:
+            - ./db:/app/db
+            - ./media/profile_pics/:/app/media/profile_pics/
+        ports:
+            - 80:8000
+            
