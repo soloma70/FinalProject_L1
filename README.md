@@ -9,31 +9,32 @@
 ---  
 **Software Tools:**
 
-1. Club's Blog Wep App on Django Python
-2. Building pipelines - Jenkins
-3. Containerization - Docker
-4. Raising the infrastructure on AWS - Terraform
-5. Initial setup of the EC2 Instance software on AWS - Ansible
+1. Club's Blog Wep App on `Django Python`
+2. Building pipelines - `Jenkins`
+3. Containerization - `Docker`
+4. Raising the infrastructure on AWS - `Terraform`
+5. Initial setup of the EC2 Instance software on AWS - `Ansible`
 
 ---
 **Preconditions:**
 
-1. A WebApp-Server-Dev instance was created, later Master-Node.
-2. A WebApp-Docker-TF-Ansible instance was created, later Slave-Node.
-3. Create SG with the inbound rules on ports 22, 80, 443, 8080.
-4. Create Elastic IP and attach  WebApp-Server-Dev (for GitHub webhook).
-5. Create Hosted zone  in the Route53 создана Hosted zone and attach domain “blog-soloma70.pp.ua”.
-6. Create S3 Bucket - “soloma-webapp-blog” - to store the website database (SQLite3), media data, docker files, intermediate data, and the Terraform backend..
+1. A `WebApp-Master` instance was created, later `Master-Node`.
+2. A `WebApp-Slave` instance was created, later `Slave-Node`.
+3. Create `SG` with the inbound rules on ports 22, 80, 443, 8080.
+4. Create `Elastic IP` and attach `WebApp-Master` (for GitHub webhook).
+5. Create `Hosted zone` in the Route53 and attach domain `blog-soloma70.pp.ua`.
+6. Create S3 Bucket - `soloma-webapp-blog` - to store the website database (SQLite3), media data, docker files, intermediate data, and the Terraform backend.
 7. On  Master-Node:
-  a) install Jenkins + GitHub, Ansible, SSH Agent plugins;
-  b) install AWS CLI;
-  c) add AWS credentials in - /tmp/.aws/aws;
-  d) add Jenkins SSH private Key with name 'aws_deploy_iaac'- app_aws; app_aws.pub - located on dir '.cred' project 'ans_tf';
-  e) Add Jenkins DockerHub credential with name 'dockerhub-soloma' (login/passwd).
+  a) install `Jenkins` + `GitHub`, `Ansible`, `SSH Agent` plugins;
+  b) install `AWS CLI`;
+  c) add AWS credentials in - `/tmp/.aws/aws`;
+  d) add Jenkins SSH private Key with name `aws_deploy_iaac`- `app_aws`; 
+  `app_aws.pub` - located on dir `.cred` project `ansible_terraform`;
+  e) Add Jenkins DockerHub credential with name `dockerhub-soloma` (login/passwd).
 8. On  Slave-Node:
-  a) install Docker, Docker Compose, Ansible, Terraform;
-  b) install AWS CLI;
-  c) add AWS credentials in - /home/ubuntu/.aws/aws.
+  a) install `Docker`, `Docker Compose`, `Ansible`, `Terraform`;
+  b) install `AWS CLI`;
+  c) add AWS credentials in - `/home/ubuntu/.aws/aws`.
 
 ---
 
