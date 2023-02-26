@@ -40,11 +40,11 @@
 
 ## The project implementation was divided into 3 stages
 
-### I. Raising Infrastructure on AWS (Terraform) and initial installation of the necessary software (Ansible)
+### I. Raising Infrastructure on AWS (Terraform) and initial installation of the necessary software (Ansible)  
 
-The name is `IaaC_WebBlog`
-The whole project is in one directory `ansible-terraform`.
-Source Repo – <https://github.com/soloma70/ansible_terraform.git>.
+The name is `IaaC_WebBlog`.  
+The whole project is in one directory `ansible-terraform`.  
+Source Repo – <https://github.com/soloma70/ansible_terraform.git>.  
 
 1. Deploying Infrastructure — files `main.tf`, `variables.tf`, `outputs.tf`:  
   a) create Key Pair;  
@@ -64,12 +64,12 @@ Source Repo – <https://github.com/soloma70/ansible_terraform.git>.
 
 ---
 
-### II.  Initial installation WebApp on the instance EC2 created in the previous step
+### II.  Initial installation WebApp on the instance EC2 created in the previous step  
 
-The name is `Initial_WebBlog`
-Source Repo – <https://github.com/soloma70/webapp_blog.git>.
-At this stage, the `Jenkinsfile` located in the `/jenkins/initial` directory is used.
-Pipeline starts through the trigger `Build after other projects are built` – `IaaC_WebBlog`.
+The name is `Initial_WebBlog`.  
+Source Repo – <https://github.com/soloma70/webapp_blog.git>.  
+At this stage, the `Jenkinsfile` located in the `/jenkins/initial` directory is used.  
+Pipeline starts through the trigger `Build after other projects are built` – `IaaC_WebBlog`.  
 
 1. First step. Job is performed on the Slave-Node (`ubuntu-terraform`, `ubuntu-docker`):  
   a) cloning the repository;  
@@ -87,12 +87,12 @@ Pipeline starts through the trigger `Build after other projects are built` – `
 
 ---
 
-### III.  Continuous Integration / Continuous Delivery WebApp.
+### III.  Continuous Integration / Continuous Delivery WebApp  
 
-The name is “CICD_WebBlog”
-Source Repo – <https://github.com/soloma70/webapp_blog.git>.
-At this stage, the `Jenkinsfile` located in the `/jenkins/cicd` directory is used.
-Pipeline starts through the trigger `Trigger builds remotely`, when adding new commits to the repo.
+The name is `CICD_WebBlog`.  
+Source Repo – <https://github.com/soloma70/webapp_blog.git>.  
+At this stage, the `Jenkinsfile` located in the `/jenkins/cicd` directory is used.  
+Pipeline starts through the trigger `Trigger builds remotely`, when adding new commits to the repo.  
 
 1. First step. Job is performed on the Slave-Node (`ubuntu-terraform`, `ubuntu-docker`):  
   a) cloning the repository;  
