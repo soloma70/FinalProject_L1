@@ -23,7 +23,7 @@
 3. Create `SG` with the inbound rules on ports 22, 80, 443, 8080.
 4. Create `Elastic IP` and attach `WebApp-Master` (for GitHub webhook).
 5. Create `Hosted zone` in the Route53 and attach domain `blog-soloma70.pp.ua`.
-6. Create S3 Bucket - `soloma-webapp-blog` - to store the website database (SQLite3), media data, docker files, intermediate data, and the Terraform backend.
+6. Create S3 Bucket - `mike-webapp-blog` - to store the website database (SQLite3), media data, docker files, intermediate data, and the Terraform backend.
 7. On  Master-Node:  
   a) install `Jenkins` + `GitHub`, `Ansible`, `SSH Agent` plugins;  
   b) install `AWS CLI`;  
