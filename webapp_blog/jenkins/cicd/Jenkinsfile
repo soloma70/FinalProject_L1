@@ -78,7 +78,7 @@ pipeline {
                 stage('Compose > S3') {
                     steps{
                         sh '''
-                        aws s3 sync docker s3://soloma-webapp-blog/docker --delete
+                        aws s3 sync docker s3://mike-webapp-blog/docker --delete
                         '''
                     }
                 }
@@ -111,9 +111,9 @@ pipeline {
                 stage('Read Host IP IDs') {
                     steps{
                         sh '''
-                        aws s3 cp s3://soloma-webapp-blog/hosts/hosts hosts
-                        aws s3 cp s3://soloma-webapp-blog/hosts/ids ids
-                        aws s3 cp s3://soloma-webapp-blog/hosts/region region
+                        aws s3 cp s3://mike-webapp-blog/hosts/hosts hosts
+                        aws s3 cp s3://mike-webapp-blog/hosts/ids ids
+                        aws s3 cp s3://mike-webapp-blog/hosts/region region
                         '''
                     }
                 }
@@ -158,8 +158,8 @@ pipeline {
                             mkdir media
                             rsync -a --delete $USER_NAME_REMOTE@$(cat hosts | sed -n 2p):./db/ ./db/
                             rsync -a --delete $USER_NAME_REMOTE@$(cat hosts | sed -n 2p):./media/ ./media/
-                            aws s3 sync db s3://soloma-webapp-blog/db --delete
-                            aws s3 sync media s3://soloma-webapp-blog/media --delete
+                            aws s3 sync db s3://mike-webapp-blog/db --delete
+                            aws s3 sync media s3://mike-webapp-blog/media --delete
                             '''
                         }
                     }
@@ -170,7 +170,7 @@ pipeline {
                         sshagent(credentials: ['aws_deploy_iaac']) {
                             sh '''
                             mkdir docker
-                            aws s3 sync s3://soloma-webapp-blog/docker docker --delete
+                            aws s3 sync s3://mike-webapp-blog/docker docker --delete
                             rsync -a --delete ./docker/docker-compose.yml $USER_NAME_REMOTE@$(cat hosts | sed -n 2p):docker-compose.yml
                             ssh $USER_NAME_REMOTE@$(cat hosts | sed -n 2p) 'docker compose up -d'
                             '''

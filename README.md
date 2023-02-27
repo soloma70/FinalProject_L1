@@ -25,7 +25,7 @@
 5. Create `Hosted zone` in the Route53 and attach domain `blog-soloma70.pp.ua`.
 6. Create S3 Bucket - `mike-webapp-blog` - to store the website database (SQLite3), media data, docker files, intermediate data, and the Terraform backend.
 7. On  Master-Node:  
-  a) install `Jenkins` + `GitHub`, `Ansible`, `SSH Agent` plugins;  
+  a) install `Jenkins` + `GitHub`, `Ansible`, `Docker`, `SSH Agent` plugins;  
   b) install `AWS CLI`;  
   c) add AWS credentials in - `/tmp/.aws/aws`;  
   d) add Jenkins SSH private Key with name `aws_deploy_iaac`- `app_aws`;  
@@ -116,6 +116,6 @@ Pipeline starts through the trigger `Trigger builds remotely`, when adding new c
 
 ![](./screenshots/Jenkins_04.jpg)
 
-### Web Site:
+### Web Site
 
 ![](./screenshots/my_web_blog_01.jpg)
