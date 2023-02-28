@@ -5,7 +5,14 @@
 ### Step L1  EPAM DevOps Fundamentals Spring 2022
   
 #### Webpage: <http://blog-soloma70.pp.ua>
-  
+
+---
+
+## Project Visualisation  
+
+![](./screenshots/Visual_FPL1_1.jpg)
+![](./screenshots/Visual_FPL1_2.jpg)
+
 ---  
 **Software Tools:**
 
@@ -23,11 +30,11 @@
 3. Create `SG` with the inbound rules on ports 22, 80, 443, 8080.
 4. Create `Elastic IP` and attach `WebApp-Master` (for GitHub webhook).
 5. Create `Hosted zone` in the Route53 and attach domain `blog-soloma70.pp.ua`.
-6. Create S3 Bucket - `soloma-webapp-blog` - to store the website database (SQLite3), media data, docker files, intermediate data, and the Terraform backend.
+6. Create S3 Bucket - `mike-webapp-blog` - to store the website database (SQLite3), media data, docker files, intermediate data, and the Terraform backend.
 7. On  Master-Node:  
-  a) install `Jenkins` + `GitHub`, `Ansible`, `SSH Agent` plugins;  
+  a) install `Jenkins` + `GitHub`, `Ansible`, `Docker`, `SSH Agent` plugins;  
   b) install `AWS CLI`;  
-  c) add AWS credentials in - `/tmp/.aws/aws`;  
+  c) add AWS credentials in - `/var/lib/jenkins/.aws/aws`;  
   d) add Jenkins SSH private Key with name `aws_deploy_iaac`- `app_aws`;  
   `app_aws.pub` - located on dir `.cred` project `ansible_terraform`;  
   e) Add Jenkins DockerHub credential with name `dockerhub-soloma` (login/passwd).  
@@ -105,7 +112,8 @@ Pipeline starts through the trigger `Trigger builds remotely`, when adding new c
   c) copy `db` & `media` files from EC2 Instance `WebApp-Prod` on the S3 Bucket;  
   d) copy compose files from S3 Bucket on the EC2 Instance `WebApp-Prod`;  
   e) Run Docker Compose file on the EC2 Instance `WebApp-Prod`;  
-  f) testing the access to `WepApp_Blog` in Internet.  
+  f) testing the access to `WepApp_Blog` in Internet;  
+  g) if the test fails, it rolls back to the previous version site.  
 
 ![](./screenshots/Jenkins_03.jpg)
 ![](./screenshots/DockerHub_01.jpg)
@@ -116,6 +124,6 @@ Pipeline starts through the trigger `Trigger builds remotely`, when adding new c
 
 ![](./screenshots/Jenkins_04.jpg)
 
-### Web Site:
+### Web Site
 
 ![](./screenshots/my_web_blog_01.jpg)
