@@ -1,8 +1,8 @@
-# Final Project "Deployment infrastructure and website "Python Bytes Club's Blog"
+# Final Project "Create infrastructure and deploy website “Python Bytes Club's Blog”
 
 ## Mykhailo Solomashenko
 
-### Step L1  EPAM DevOps Fundamentals Spring 2022
+### Step L1  EPAM Cloud&DevOps Fundamentals Autumn 2022
   
 #### Webpage: <http://blog-soloma70.pp.ua>
 
